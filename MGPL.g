@@ -8,12 +8,11 @@ options { backtrack=false; }
 }*/
 
 start
-	:	Prog EOF;
-
-INT   : ( '0' | ('1'..'9') ('0'..'9')* ) ;
-		
+	:	Prog EOF;		
 Op	
 	:	'||' | '&&' | '==' | '<' | '<=' | '+' | '-' | '*' | '/';
+	
+COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
 	
 Number
 	:	( '0' | ('1'..'9') ('0'..'9')* ) ;		
@@ -43,7 +42,10 @@ ObjType
 	:	'rectangle' | 'triangle' | 'circle';
 
 AttrAssList
-	:	AttrAss ',' AttrAssList | AttrAss;
+	:	AttrAss AttrAssList2;
+	
+AttrAssList2
+	:	| ',' AttrAssList;	
 
 AttrAss
 	:	Idf '=' Expr;
@@ -75,10 +77,19 @@ AssStmt
 	:	Var '=' Expr;
 
 Var
-	:	Idf | Idf '[' Expr ']' | Idf '.' Idf | Idf '[' Expr ']' '.' Idf;
+	:	Idf Var2;
+	
+Var2 
+	:	| '[' Expr ']' Var3 | '.' Idf;
+
+Var3
+	:	| '.' Idf;
 	
 Expr
-	:	Number | Var | Var 'touches' Var | '-'Expr| '!'Expr | '('Expr')' | Expr Op Expr;		
+	:	(Number | Var Expr2 | '-'Expr | '!'Expr | '('Expr')') (Op Expr)*;
+
+Expr2
+	:	| 'touches' Var;
 	
 // Whitespace -- ignored
 WS : (' '|'\r'|'\t'|'\u000C'|'\n') { $channel=HIDDEN; } ; // or
