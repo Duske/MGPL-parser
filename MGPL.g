@@ -1,95 +1,83 @@
 grammar MGPL;
 options { backtrack=false; }
-/*@header {
-	package antlr.example2;
-}
-@lexer::header {
-	package antlr.example2;
-}*/
-
-start
-	:	Prog EOF;		
-Op	
-	:	'||' | '&&' | '==' | '<' | '<=' | '+' | '-' | '*' | '/';
 	
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
 	
-Number
-	:	( '0' | ('1'..'9') ('0'..'9')* ) ;		
+NUMBER
+	:	( '0' | ('1'..'9') ('0'..'9')* );	
+IDF	
+	:	('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
 
-Chars
-	: 	(('a'..'z') | ('A'..'Z'))+;
-	
-Idf	
-	:	Chars(Chars|Number|'_')*;
+Op	
+	:	'||' | '&&' | '==' | '<' | '<=' | '+' | '-' | '*' | '/';
 
-Prog
-	: 'game' Idf '(' AttrAssList ? ')' Decl* StmtBlock Block*;
+prog
+	: 'game' IDF '(' attrasslist ? ')' decl* stmtblock block*;
 
-Decl
-	:	VarDecl ';' | ObjDecl ';';
+decl
+	:	vardecl ';' | objdecl ';';
 
-VarDecl
-	:	'int' Idf Init ? | 'int' Idf '[' Number ']';
+vardecl
+	:	'int' IDF init ? | 'int' IDF '[' NUMBER ']';
 
-Init
-	:	'=' Expr;
+init
+	:	'=' expr;
 
-ObjDecl
-	:	ObjType Idf '(' AttrAssList ? ')' | ObjType Idf '[' Number ']';
+objdecl
+	:	objtype IDF '(' attrasslist ? ')' | objtype IDF '[' NUMBER ']';
 
-ObjType
+objtype
 	:	'rectangle' | 'triangle' | 'circle';
 
-AttrAssList
-	:	AttrAss AttrAssList2;
+attrasslist
+	:	attrass attrasslist2;
 	
-AttrAssList2
-	:	| ',' AttrAssList;	
+attrasslist2
+	:	| ',' attrasslist;	
 
-AttrAss
-	:	Idf '=' Expr;
+attrass
+	:	IDF '=' expr;
 
-Block
-	:	AnimBlock | EventBlock;
+block
+	:	animblock | eventblock;
 
-AnimBlock
-	:	'animation' Idf '(' ObjType Idf ')' StmtBlock;
+animblock
+	:	'animation' IDF '(' objtype IDF ')' stmtblock;
 
-EventBlock
-	:	'on' KeyStroke StmtBlock;
+eventblock
+	:	'on' keystroke stmtblock;
 
-KeyStroke
+keystroke
 	:	'space' | 'leftarrow' | 'rightarrow' | 'uparrow' | 'downarrow';
 
-StmtBlock
-	:	'{' Stmt* '}';
+stmtblock
+	:	'{' stmt* '}';
 	
-IfStmt
-	:	'if (' Expr ')' StmtBlock '(' 'else' StmtBlock ')'?;
+ifstmt
+	:	'if (' expr ')' stmtblock '(' 'else' stmtblock ')'?;
 	
-ForStmt
-	:	'for' '(' AssStmt ';' Expr ';' AssStmt ')' StmtBlock;	
+forstmt
+	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock;	
 	
-Stmt:	IfStmt | ForStmt | AssStmt ';';	
+stmt:	ifstmt | forstmt | assstmt ';';	
 
-AssStmt
-	:	Var '=' Expr;
+assstmt
+	:	var '=' expr;
 
-Var
-	:	Idf Var2;
+var
+	:	IDF var2;
 	
-Var2 
-	:	| '[' Expr ']' Var3 | '.' Idf;
+var2 
+	:	| '[' expr ']' var3 | '.' IDF;
 
-Var3
-	:	| '.' Idf;
+var3
+	:	| '.' IDF;
 	
-Expr
-	:	(Number | Var Expr2 | '-'Expr | '!'Expr | '('Expr')') (Op Expr)*;
+expr
+	:	(NUMBER | var expr2 | '-'expr | '!'expr | '('expr')') (Op expr)*;
 
-Expr2
-	:	| 'touches' Var;
+expr2
+	:	| 'touches' var;
 	
 // Whitespace -- ignored
 WS : (' '|'\r'|'\t'|'\u000C'|'\n') { $channel=HIDDEN; } ; // or
