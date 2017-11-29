@@ -1,6 +1,6 @@
 grammar MGPL;
 options { backtrack=false; }
-	
+
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
 	
 NUMBER
@@ -8,8 +8,23 @@ NUMBER
 IDF	
 	:	('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
 
-Op	
-	:	'||' | '&&' | '==' | '<' | '<=' | '+' | '-' | '*' | '/';
+OROP
+	:	'||';
+
+ANDOP
+	:	'&&';
+
+MULOP
+	:	'*' | '/';
+
+ADDOP
+	:	'+' | '-' ;
+
+RELOP
+	:	'==' | '<' | '<=';
+
+UNOP	
+	:	'!' | '-';
 
 prog
 	: 'game' IDF '(' attrasslist ? ')' decl* stmtblock block*;
@@ -72,13 +87,34 @@ var2
 
 var3
 	:	| '.' IDF;
-	
-expr
-	:	(NUMBER | var expr2 | '-'expr | '!'expr | '('expr')') (Op expr)*;
 
-expr2
+expr
+	:   (NUMBER | var expr3 | opexpr expr);
+
+opexpr 
+	:	orexpr;
+
+orexpr
+	:	andexpr (OROP andexpr)*;
+	
+andexpr
+	:	relexpr (ANDOP relexpr)*;
+
+relexpr
+	:	addexpr (RELOP addexpr)*;
+
+addexpr
+	:	mulexpr (ADDOP mulexpr)*;
+	
+mulexpr
+	:	unexpr (MULOP unexpr)*;
+	
+unexpr
+	:	UNOP?;
+
+expr3
 	:	| 'touches' var;
 	
 // Whitespace -- ignored
-WS : (' '|'\r'|'\t'|'\u000C'|'\n') { $channel=HIDDEN; } ; // or
-// WS : (' '|'\r'|'\t'|'\u000C'|'\n') { skip(); } ;
+//WS : (' '|'\r'|'\t'|'\u000C'|'\n') { $channel=HIDDEN; } ; // or
+WS : (' '|'\r'|'\t'|'\u000C'|'\n') { skip(); } ;
