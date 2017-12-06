@@ -1,5 +1,5 @@
 grammar MGPL;
-options { backtrack=false; }
+options { backtrack=false; output=AST; }
 
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
 	
@@ -31,10 +31,10 @@ MINUS
 	:	'-';
 
 prog
-	: 	'game' IDF '(' attrasslist ? ')' decl* stmtblock block*;
+	: 	'game'! IDF '('! attrasslist ? ')'! decl* stmtblock block*;
 
 decl
-	:	vardecl ';' | objdecl ';';
+	:	vardecl ';'! | objdecl ';'!;
 
 vardecl
 	:	'int' IDF init ? | 'int' IDF '[' NUMBER ']';
@@ -43,7 +43,7 @@ init
 	:	'=' expr;
 
 objdecl
-	:	objtype IDF '(' attrasslist ? ')' | objtype IDF '[' NUMBER ']';
+	:	objtype IDF '('! attrasslist ? ')'! | objtype IDF '[' NUMBER ']';
 
 objtype
 	:	'rectangle' | 'triangle' | 'circle';
@@ -70,16 +70,16 @@ keystroke
 	:	'space' | 'leftarrow' | 'rightarrow' | 'uparrow' | 'downarrow';
 
 stmtblock
-	:	'{' stmt* '}';
+	:	'{'! stmt* '}'!;
 	
 ifstmt
-	:	'if' '(' expr ')' stmtblock ('(' 'else' stmtblock ')')?;
+	:	'if' '('! expr ')'! stmtblock ('('! 'else' stmtblock ')'!)?;
 	
 forstmt
-	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock;	
+	:	'for' '('! assstmt ';'! expr ';'! assstmt ')'! stmtblock;	
 	
 stmt
-	:	ifstmt | forstmt | assstmt ';';	
+	:	ifstmt | forstmt | assstmt ';'!;	
 
 assstmt
 	:	var '=' expr;
@@ -115,7 +115,7 @@ unexpr
 	:	unop? expr2;
 	
 expr2 
-	: 	var expr3 | NUMBER | '(' expr ')';
+	: 	var expr3 | NUMBER | '('! expr ')'!;
 
 expr3
 	:	| 'touches' var;
