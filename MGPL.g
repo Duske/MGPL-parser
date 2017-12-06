@@ -73,10 +73,7 @@ stmtblock
 	:	'{' stmt* '}';
 	
 ifstmt
-	:	'if (' expr ')' stmtblock elsestmt?;
-	
-elsestmt
-	:	'else' stmtblock;
+	:	'if' '(' expr ')' stmtblock ('(' 'else' stmtblock ')')?;
 	
 forstmt
 	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock;	
