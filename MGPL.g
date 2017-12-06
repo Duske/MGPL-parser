@@ -9,23 +9,26 @@ NUMBER
 IDF	
 	:	('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
 
-orop
+OROP
 	:	'||';
 
-andop
+ANDOP
 	:	'&&';
 
-mulop
+MULOP
 	:	'*' | '/';
 
 addop
-	:	'+' | '-' ;
+	:	'+' | MINUS;
 
-relop
+RELOP
 	:	'==' | '<' | '<=';
 
 unop	
-	:	'!' | '-';
+	:	'!' | MINUS;
+
+MINUS
+	:	'-';
 
 prog
 	: 	'game' IDF '(' attrasslist ? ')' decl* stmtblock block*;
@@ -97,19 +100,19 @@ expr
 	:   	orexpr;
 
 orexpr
-	:	andexpr (orop andexpr)*;
+	:	andexpr (OROP andexpr)*;
 	
 andexpr
-	:	relexpr (andop relexpr)*;
+	:	relexpr (ANDOP relexpr)*;
 
 relexpr
-	:	addexpr (relop addexpr)*;
+	:	addexpr (RELOP addexpr)*;
 
 addexpr
 	:	mulexpr (addop mulexpr)*;
 	
 mulexpr
-	:	unexpr (mulop unexpr)*;
+	:	unexpr (MULOP unexpr)*;
 	
 unexpr
 	:	unop? expr2;
@@ -121,5 +124,5 @@ expr3
 	:	| 'touches' var;
 	
 // Whitespace -- ignored
-//WS : (' '|'\r'|'\t'|'\u000C'|'\n') { $channel=HIDDEN; } ; // or
-WS : (' '|'\r'|'\t'|'\u000C'|'\n') { skip(); } ;
+WS : (' '|'\r'|'\t'|'\u000C'|'\n') { $channel=HIDDEN; } ; // or
+//WS : (' '|'\r'|'\t'|'\u000C'|'\n') { skip(); } ;
