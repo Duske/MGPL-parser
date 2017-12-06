@@ -1,5 +1,12 @@
 grammar MGPL;
 options { backtrack=false; output=AST; }
+tokens { 
+	GAME;
+	SETTINGS;
+	GLOBAL_VARS;
+	CODE;
+	STMTBLOCK;
+}
 
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
 	
@@ -31,7 +38,9 @@ MINUS
 	:	'-';
 
 prog
-	: 	'game'! IDF '('! attrasslist ? ')'! decl* stmtblock block*;
+	: 	'game' IDF '(' attrasslist ? ')' decl* stmtblock block*
+			-> ^(GAME ^(SETTINGS decl*) stmtblock ^(CODE block*));
+		//-> ^(IDF ^(SETTINGS attrasslist) ^(GLOBAL_VARS decl*) stmtblock ^(CODE block*))
 
 decl
 	:	vardecl ';'! | objdecl ';'!;
@@ -70,7 +79,7 @@ keystroke
 	:	'space' | 'leftarrow' | 'rightarrow' | 'uparrow' | 'downarrow';
 
 stmtblock
-	:	'{'! stmt* '}'!;
+	:	'{' stmt* '}';
 	
 ifstmt
 	:	'if' '('! expr ')'! stmtblock ('else' stmtblock)?;
