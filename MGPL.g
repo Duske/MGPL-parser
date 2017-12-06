@@ -5,29 +5,30 @@ COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};
 	
 NUMBER
 	:	( '0' | ('1'..'9') ('0'..'9')* );	
+	
 IDF	
 	:	('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
 
-OROP
+orop
 	:	'||';
 
-ANDOP
+andop
 	:	'&&';
 
-MULOP
+mulop
 	:	'*' | '/';
 
-ADDOP
+addop
 	:	'+' | '-' ;
 
-RELOP
+relop
 	:	'==' | '<' | '<=';
 
-UNOP	
+unop	
 	:	'!' | '-';
 
 prog
-	: 'game' IDF '(' attrasslist ? ')' decl* stmtblock block*;
+	: 	'game' IDF '(' attrasslist ? ')' decl* stmtblock block*;
 
 decl
 	:	vardecl ';' | objdecl ';';
@@ -48,7 +49,7 @@ attrasslist
 	:	attrass attrasslist2;
 	
 attrasslist2
-	:	| ',' attrasslist;	
+	:	| ',' attrasslist;	
 
 attrass
 	:	IDF '=' expr;
@@ -69,12 +70,16 @@ stmtblock
 	:	'{' stmt* '}';
 	
 ifstmt
-	:	'if (' expr ')' stmtblock '(' 'else' stmtblock ')'?;
+	:	'if (' expr ')' stmtblock elsestmt?;
+	
+elsestmt
+	:	'else' stmtblock;
 	
 forstmt
 	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock;	
 	
-stmt:	ifstmt | forstmt | assstmt ';';	
+stmt
+	:	ifstmt | forstmt | assstmt ';';	
 
 assstmt
 	:	var '=' expr;
@@ -89,28 +94,28 @@ var3
 	:	| '.' IDF;
 
 expr
-	:   (NUMBER | var expr3 | opexpr expr);
-
-opexpr 
-	:	orexpr;
+	:   	orexpr;
 
 orexpr
-	:	andexpr (OROP andexpr)*;
+	:	andexpr (orop andexpr)*;
 	
 andexpr
-	:	relexpr (ANDOP relexpr)*;
+	:	relexpr (andop relexpr)*;
 
 relexpr
-	:	addexpr (RELOP addexpr)*;
+	:	addexpr (relop addexpr)*;
 
 addexpr
-	:	mulexpr (ADDOP mulexpr)*;
+	:	mulexpr (addop mulexpr)*;
 	
 mulexpr
-	:	unexpr (MULOP unexpr)*;
+	:	unexpr (mulop unexpr)*;
 	
 unexpr
-	:	UNOP?;
+	:	unop? expr2;
+	
+expr2 
+	: 	var expr3 | NUMBER | '(' expr ')';
 
 expr3
 	:	| 'touches' var;
