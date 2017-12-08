@@ -3,9 +3,17 @@ options { backtrack=false; output=AST; }
 tokens { 
 	GAME;
 	SETTINGS;
-	GLOBAL_VARS;
+	GLOBALS;
 	CODE;
 	STMTBLOCK;
+	STATEMENTS;
+	INIT;
+	ARGUMENTS;
+	ASSIGNMENT;
+	FOR_LOOP;
+	OBJECT;
+	CONDITION;
+	ARRAY;
 }
 
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
@@ -39,20 +47,22 @@ MINUS
 
 prog
 	: 	'game' IDF '(' attrasslist ? ')' decl* stmtblock block*
-			-> ^(GAME ^(SETTINGS decl*) stmtblock ^(CODE block*));
-		//-> ^(IDF ^(SETTINGS attrasslist) ^(GLOBAL_VARS decl*) stmtblock ^(CODE block*))
+			-> ^(GAME ^(SETTINGS attrasslist) ^(GLOBALS decl*) ^(INIT stmtblock) ^(CODE block*));
 
 decl
 	:	vardecl ';'! | objdecl ';'!;
 
 vardecl
-	:	'int' IDF init ? | 'int' IDF '[' NUMBER ']';
+	:	'int' IDF init? -> ^(IDF 'int' init?) 
+	| 'int' IDF '[' NUMBER ']' -> ^(IDF 'int' NUMBER)
+	;
 
 init
-	:	'=' expr;
+	:	'='! expr;
 
 objdecl
-	:	objtype IDF '('! attrasslist ? ')'! | objtype IDF '[' NUMBER ']';
+	:	objtype IDF '(' attrasslist? ')' -> ^(IDF objtype ^(ARGUMENTS attrasslist?))
+	| objtype IDF '[' NUMBER ']' -> ^(IDF objtype NUMBER);
 
 objtype
 	:	'rectangle' | 'triangle' | 'circle';
@@ -61,10 +71,10 @@ attrasslist
 	:	attrass attrasslist2;
 	
 attrasslist2
-	:	| ',' attrasslist;	
+	:	| ','! attrasslist;	
 
 attrass
-	:	IDF '=' expr;
+	:	IDF '=' expr -> ^(IDF expr);
 
 block
 	:	animblock | eventblock;
@@ -79,19 +89,19 @@ keystroke
 	:	'space' | 'leftarrow' | 'rightarrow' | 'uparrow' | 'downarrow';
 
 stmtblock
-	:	'{' stmt* '}';
+	:	'{'! stmt* '}'!;
 	
 ifstmt
 	:	'if' '('! expr ')'! stmtblock ('else' stmtblock)?;
 	
 forstmt
-	:	'for' '('! assstmt ';'! expr ';'! assstmt ')'! stmtblock;	
+	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock -> ^(FOR_LOOP ^(CONDITION assstmt expr assstmt) ^(STATEMENTS stmtblock));	
 	
 stmt
 	:	ifstmt | forstmt | assstmt ';'!;	
 
 assstmt
-	:	var '=' expr;
+	:	var '=' expr -> ^(ASSIGNMENT var ^(expr));
 
 var
 	:	IDF var2;
