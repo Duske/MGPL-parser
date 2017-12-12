@@ -1,4 +1,4 @@
-grammar MGPL;
+grammar mgpl;
 options { backtrack=false; output=AST; }
 tokens { 
 	GAME;
@@ -14,12 +14,16 @@ tokens {
 	OBJECT;
 	CONDITION;
 	ARRAY;
+	IF;
+	ELSE;
+//Added EMPTY-Token
+	EMPTY;
 }
 
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
 	
 NUMBER
-	:	( '0' | ('1'..'9') ('0'..'9')* );	
+	:	('0' | ('1'..'9') ('0'..'9')* );	
 	
 IDF	
 	:	('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
@@ -92,7 +96,7 @@ stmtblock
 	:	'{'! stmt* '}'!;
 	
 ifstmt
-	:	'if' '('! expr ')'! stmtblock ('else' stmtblock)?;
+	:	'if' '(' expr ')' stmtblock ('else' stmtblock)? -> ^(IF ^(CONDITION expr) ^(STATEMENTS stmtblock) ^(ELSE ^(STATEMENTS stmtblock)));
 	
 forstmt
 	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock -> ^(FOR_LOOP ^(CONDITION assstmt expr assstmt) ^(STATEMENTS stmtblock));	
@@ -104,31 +108,33 @@ assstmt
 	:	var '=' expr -> ^(ASSIGNMENT var ^(expr));
 
 var
-	:	IDF var2;
+	:	IDF var2 -> ^(IDF var2);
 	
+//Added EMPTY-Token
 var2 
-	:	| '[' expr ']' var3 | '.' IDF;
+	:	-> EMPTY| '[' expr ']' var3 -> ^(ARRAY expr var3) | '.' IDF -> ^(IDF);
 
+//Added EMPTY-Token
 var3
-	:	| '.' IDF;
-
+	:	-> EMPTY| '.' IDF -> ^(IDF);
+	
 expr
 	:   	orexpr;
 
 orexpr
-	:	andexpr (OROP andexpr)*;
+	:	andexpr (OROP^ andexpr)*;
 	
 andexpr
-	:	relexpr (ANDOP relexpr)*;
+	:	relexpr (ANDOP^ relexpr)*;
 
 relexpr
-	:	addexpr (RELOP addexpr)*;
+	:	addexpr (RELOP^ addexpr)*;
 
 addexpr
-	:	mulexpr (addop mulexpr)*;
+	:	mulexpr (addop^ mulexpr)*;
 	
 mulexpr
-	:	unexpr (MULOP unexpr)*;
+	:	unexpr (MULOP^ unexpr)*;
 	
 unexpr
 	:	unop? expr2;
