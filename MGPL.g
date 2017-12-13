@@ -13,11 +13,10 @@ tokens {
 	FOR_LOOP;
 	OBJECT;
 	CONDITION;
-	ARRAY;
+	INDEX;
 	IF;
 	ELSE;
-//Added EMPTY-Token
-	EMPTY;
+	PROPERTY;
 }
 
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
@@ -108,15 +107,17 @@ assstmt
 	:	var '=' expr -> ^(ASSIGNMENT var ^(expr));
 
 var
-	:	IDF var2 -> ^(IDF var2);
+	:	IDF var2? -> ^(IDF var2?);
 	
 //Added EMPTY-Token
 var2 
-	:	-> EMPTY| '[' expr ']' var3 -> ^(ARRAY expr var3) | '.' IDF -> ^(IDF);
+	:	
+	'[' expr ']' var3? -> ^(INDEX expr var3?) 
+	| var3;
 
-//Added EMPTY-Token
+//Added EMPTY-Token^
 var3
-	:	-> EMPTY| '.' IDF -> ^(IDF);
+	:	'.' IDF -> ^(PROPERTY IDF);
 	
 expr
 	:   	orexpr;
