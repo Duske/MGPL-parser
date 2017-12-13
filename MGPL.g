@@ -17,6 +17,8 @@ tokens {
 	IF;
 	ELSE;
 	PROPERTY;
+	THEN;
+	VALUE;
 }
 
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
@@ -95,7 +97,7 @@ stmtblock
 	:	'{'! stmt* '}'!;
 	
 ifstmt
-	:	'if' '(' expr ')' stmtblock ('else' stmtblock)? -> ^(IF ^(CONDITION expr) ^(STATEMENTS stmtblock) ^(ELSE ^(STATEMENTS stmtblock)));
+	:	'if' '(' expr ')' stmtblock ('else' stmtblock)? -> ^(IF ^(CONDITION expr) ^(THEN stmtblock) ^(ELSE stmtblock));
 	
 forstmt
 	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock -> ^(FOR_LOOP ^(CONDITION assstmt expr assstmt) ^(STATEMENTS stmtblock));	
@@ -104,7 +106,7 @@ stmt
 	:	ifstmt | forstmt | assstmt ';'!;	
 
 assstmt
-	:	var '=' expr -> ^(ASSIGNMENT var ^(expr));
+	:	var '=' expr -> ^(ASSIGNMENT var ^(VALUE expr));
 
 var
 	:	IDF var2? -> ^(IDF var2?);
