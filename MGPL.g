@@ -1,4 +1,4 @@
-grammar mgpl;
+grammar MGPL;
 options { backtrack=false; output=AST; }
 tokens { 
 	GAME;
