@@ -19,6 +19,11 @@ tokens {
 	PROPERTY;
 	THEN;
 	VALUE;
+	AFTERTHOUGHT;
+	FOR_INIT;
+	ANIMATION;
+	ARRAY;
+	EVENTHANDLER;
 }
 
 COMMENT	:	'//' ~('\n'|'\r')* '\r'? '\n' {skip();};	
@@ -58,16 +63,16 @@ decl
 	:	vardecl ';'! | objdecl ';'!;
 
 vardecl
-	:	'int' IDF init? -> ^(IDF 'int' init?) 
-	| 'int' IDF '[' NUMBER ']' -> ^(IDF 'int' NUMBER)
+	:	'int' IDF init? -> ^('int' IDF  init?) 
+	| 'int' IDF '[' NUMBER ']' -> ^('int' IDF NUMBER)
 	;
 
 init
 	:	'='! expr;
 
 objdecl
-	:	objtype IDF '(' attrasslist? ')' -> ^(IDF objtype ^(ARGUMENTS attrasslist?))
-	| objtype IDF '[' NUMBER ']' -> ^(IDF objtype NUMBER);
+	:	objtype IDF '(' attrasslist? ')' -> ^(objtype IDF ^(ARGUMENTS attrasslist?))
+	| objtype IDF '[' NUMBER ']' -> ^(ARRAY ^(objtype IDF NUMBER));
 
 objtype
 	:	'rectangle' | 'triangle' | 'circle';
@@ -85,10 +90,10 @@ block
 	:	animblock | eventblock;
 
 animblock
-	:	'animation' IDF '(' objtype IDF ')' stmtblock;
+	:	'animation' i1=IDF '(' objtype i2=IDF ')' stmtblock -> ^(ANIMATION ^($i1 ^(ARGUMENTS objtype $i2 ) ^(STATEMENTS stmtblock)));
 
 eventblock
-	:	'on' keystroke stmtblock;
+	:	'on' keystroke stmtblock -> ^(EVENTHANDLER keystroke stmtblock);
 
 keystroke
 	:	'space' | 'leftarrow' | 'rightarrow' | 'uparrow' | 'downarrow';
@@ -97,10 +102,10 @@ stmtblock
 	:	'{'! stmt* '}'!;
 	
 ifstmt
-	:	'if' '(' expr ')' stmtblock ('else' stmtblock)? -> ^(IF ^(CONDITION expr) ^(THEN stmtblock) ^(ELSE stmtblock));
+	:	'if' '(' expr ')' s1=stmtblock ('else' s2=stmtblock)? -> ^(IF ^(CONDITION expr) ^(THEN $s1) ^(ELSE $s2)?);
 	
 forstmt
-	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock -> ^(FOR_LOOP ^(CONDITION assstmt expr assstmt) ^(STATEMENTS stmtblock));	
+	:	'for' '(' assstmt ';' expr ';' assstmt ')' stmtblock -> ^(FOR_LOOP ^(FOR_INIT assstmt ^(CONDITION expr) ^(AFTERTHOUGHT assstmt)) ^(STATEMENTS stmtblock));	
 	
 stmt
 	:	ifstmt | forstmt | assstmt ';'!;	
@@ -111,18 +116,16 @@ assstmt
 var
 	:	IDF var2? -> ^(IDF var2?);
 	
-//Added EMPTY-Token
 var2 
 	:	
-	'[' expr ']' var3? -> ^(INDEX expr var3?) 
+	'[' expr ']' var3? -> ^(INDEX expr) var3? 
 	| var3;
 
-//Added EMPTY-Token^
 var3
 	:	'.' IDF -> ^(PROPERTY IDF);
 	
 expr
-	:   	orexpr;
+	:   orexpr;
 
 orexpr
 	:	andexpr (OROP^ andexpr)*;
