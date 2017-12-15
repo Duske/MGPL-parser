@@ -1,5 +1,5 @@
 grammar MGPL;
-options { backtrack=false; output=AST; }
+options { backtrack=false; output=AST; k=1;}
 tokens { 
 	GAME;
 	SETTINGS;
@@ -56,23 +56,28 @@ MINUS
 	:	'-';
 
 prog
-	: 	'game' IDF '(' attrasslist ? ')' decl* stmtblock block*
-			-> ^(GAME ^(SETTINGS attrasslist) ^(GLOBALS decl*) ^(INIT stmtblock) ^(CODE block*));
+	: 	'game' IDF '(' attrasslist ? ')' decl* stmtblock? block*
+			-> ^(GAME ^(SETTINGS attrasslist) ^(GLOBALS decl*) ^(INIT stmtblock?) ^(CODE block*));
 
 decl
 	:	vardecl ';'! | objdecl ';'!;
 
 vardecl
-	:	'int' IDF init? -> ^('int' IDF  init?) 
-	| 'int' IDF '[' NUMBER ']' -> ^('int' IDF NUMBER)
-	;
+	:	'int' IDF vardecl2? -> ^('int' IDF vardecl2?);
+
+vardecl2
+	:	init
+	| '['! NUMBER ']'!;
 
 init
 	:	'='! expr;
 
 objdecl
-	:	objtype IDF '(' attrasslist? ')' -> ^(objtype IDF ^(ARGUMENTS attrasslist?))
-	| objtype IDF '[' NUMBER ']' -> ^(ARRAY ^(objtype IDF NUMBER));
+	:	objtype IDF objdecl2 -> ^(objtype IDF objdecl2);
+
+objdecl2
+	:	'(' attrasslist? ')' -> ^(ARGUMENTS attrasslist?)
+	| '[' NUMBER ']' -> ^(ARRAY NUMBER);
 
 objtype
 	:	'rectangle' | 'triangle' | 'circle';
