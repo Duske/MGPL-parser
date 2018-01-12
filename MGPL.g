@@ -148,7 +148,7 @@ mulexpr
 	:	unexpr (MULOP^ unexpr)*;
 	
 unexpr
-	:	unop? expr2;
+	:	(unop^)? expr2;
 	
 expr2 
 	: 	var expr3 | NUMBER | '('! expr ')'!;
